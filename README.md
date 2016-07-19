@@ -2,7 +2,7 @@ Pustike EventBus
 ================
 Pustike EventBus is a fork of [Guava EventBus](https://github.com/google/guava/wiki/EventBusExplained), which is probably the most commonly known event bus for Java. Most of the documentation here and test cases are from Guava itself.
 
-The [Guava Project](https://github.com/google/guava) contains several core libraries and is distributed as a single module that has a size of ~2.2Mb (as of v19.0). So an application using only the EventBus will also need to include the full Guava dependency.
+The [Guava Project](https://github.com/google/guava) contains several core libraries and is distributed as a single module that has a size of ~2.2MB (as of v19.0). So an application using only the EventBus will also need to include the full Guava dependency.
 
 Pustike EventBus is an effort to extract only the event bus library from Guava project without any other dependencies. And it also provides few additional features / changes, like:
 * Typed Events supporting event type specific subscribers
@@ -29,7 +29,7 @@ Dispatcher is used for dispatching events to subscribers, providing different ev
 2. Immediate Dispatcher: dispatches events to subscribers immediately as they're posted without using an intermediate queue to change the dispatch order. This is effectively a depth-first dispatch order, vs. breadth-first when using a queue. If an subscriber method generates a new event, this dispatcher will deliver that event first and then continues deliver the original event to other listeners.
 
 ### Subscribing
-Subscribe to events by registering listeners to the bus. Subscriber methods in a listener should be annotated with **@Subscribe** and the method should take only a single parameter, the type of which will be the event to subscribe to. The registry will traverse the listener class hierarchy and add methods from base classes or interfaces that are annotated.
+Subscribe to events by registering listeners to the bus. Subscriber methods in a listener should be annotated with `@Subscribe` and the method should take only a single parameter, the type of which will be the event to subscribe to. The registry will traverse the listener class hierarchy and add methods from base classes or interfaces that are annotated.
 ```java
 Object listener = new Object() {
     @Subscribe
@@ -39,9 +39,9 @@ Object listener = new Object() {
 };
 bus.register(listener);
 ```
-Here internally a weak reference to listener objects are maintained instead of a strong reference, as compared to Gauava.
+Here internally weak references to listener objects are maintained instead of strong references, as in Gauava.
 
-* **Thread Safety**: By default, the bus considers subscriber methods as not thread safe and synchronizes invocations of the subscriber method to ensure that only one thread may enter the method at a time. To mark an event subscriber method as being thread-safe, set **@Subscribe(threadSafe = true)**. It indicates that the bus may invoke this event subscriber simultaneously from multiple threads.
+* **Thread Safety**: By default, the bus considers subscriber methods as not thread safe and synchronizes invocations of the subscriber method to ensure that only one thread may enter the method at a time. To mark an event subscriber method as being thread-safe, set `@Subscribe(threadSafe = true)`. It indicates that the bus may invoke this event subscriber simultaneously from multiple threads.
 
 ### Publishing
 Publish events on the bus which dispatches it to all listeners subscribing to this event type. An instance of any class may be published and it will only be dispatched to subscribers for that type.
@@ -49,7 +49,7 @@ Publish events on the bus which dispatches it to all listeners subscribing to th
 String messageEvent = "Hello!";
 bus.publish(messageEvent);
 ```
-* **Event Hierarchy**: When an event is published, it is delivered to all the subscribers matching to any of the super classes or interfaces of this event. For ex. when *String* and *Integer* type events are published, the subscriber to *Comparable* will be called on both the events. This can be used to create more generic listeners listening for a broader range of events and more detailed ones for specific purposes.
+* **Event Hierarchy**: When an event is published, it is delivered to all the subscribers matching to any of the super classes or interfaces of this event. For ex. when `String` and `Integer` type events are published, the subscriber to `Comparable` will be called on both the events. This can be used to create more generic listeners listening for a broader range of events and more detailed ones for specific purposes.
 
 ### Unregister
 
@@ -59,7 +59,7 @@ bus.unregister(listener);
 ```
 
 ### Special Event Types
-* **Typed Event**: Instead of creating separate classes for each type of events, the TypedEvent provides a type aware event with an optional context information. This event will be delivered to only those subscriber methods matching to it's actual type. For example: in place of creating *CustomerEvent*, *VendorEvent*, etc, the *TypedEvent<Customer>*, *TypedEvent<Vendor>* can be used. The context information can be useful in communicating the state of the object, like *new TypedEvent<>(customer, "MODIFIED");*
+* **Typed Event**: Instead of creating separate classes for each type of events, the TypedEvent provides a type aware event with an optional context information. This event will be delivered to only those subscriber methods matching to it's actual type. For example: in place of creating `CustomerEvent`, `VendorEvent`, etc, the `TypedEvent<Customer>`, `TypedEvent<Vendor>` can be used. The context information can be useful in communicating the state of the object, like `new TypedEvent<>(customer, "MODIFIED");`
 ```java
     @Subscribe
     public void onTypedStringEvent(TypedEvent<String> event) {
