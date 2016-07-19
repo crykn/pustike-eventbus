@@ -86,7 +86,7 @@ bus.unregister(listener);
 ```
 
 ### Using external Cache
-By default, the event bus will use a ConcurrentMap internally to cache Subscriber methods identified on registering listener objects. To use an external cache like [Caffiene](https://github.com/ben-manes/caffeine) for loading & storing subscriber methods in a listener class and type hierarchy of event classes, the following approach can be used:
+By default, the event bus will use a ConcurrentMap internally to cache Subscriber methods identified on registering listener objects. To use an external cache like [Caffeine](https://github.com/ben-manes/caffeine) for loading & storing subscriber methods in a listener class and type hierarchy of event classes, the following approach can be used:
 ```java
 LoadingCache<Class<?>, List<Method>> subscriberMethodCache = Caffeine.newBuilder()
         .weakKeys().build(SubscriberRegistry::getAnnotatedMethodsNotCached);
