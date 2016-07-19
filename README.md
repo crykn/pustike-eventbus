@@ -7,9 +7,9 @@ The [Guava Project](https://github.com/google/guava) contains several core libra
 Pustike EventBus is an effort to extract only the event bus library from Guava project without any other dependencies. And it also provides few additional features / changes, like:
 * Typed Events supporting event type specific subscribers
 * Error handling using ExceptionEvents
-* WeekReference to target subscribers
+* WeakReference to target subscribers
 * Unregistering a not-registered subscriber doesn't throw exception
-* Only ~20k in size and has no additional dependencies
+* Only ~20kB in size and has no additional dependencies
 * Java 8 as the min requirement (Guava supports Java 6 onwards)
 
 Event Bus
@@ -24,9 +24,9 @@ EventBus bus = new EventBus();
 ### Dispatcher
 Dispatcher is used for dispatching events to subscribers, providing different event ordering guarantees that make sense for different situations. Please note that the dispatcher controls the order in which events are dispatched, while the executor controls how (i.e. on which thread) the subscriber is actually called when an event is dispatched to it. Two types of dispatchers are supported:
 
-1. Per Thread Dispatch Queue: a dispatcher that queues events that are posted reentrantly on a thread that is already dispatching an event, guaranteeing that all events posted on a single thread are dispatched to all subscribers in the order they are posted.
+1. **Per Thread Dispatch Queue**: a dispatcher that queues events that are posted reentrantly on a thread that is already dispatching an event, guaranteeing that all events posted on a single thread are dispatched to all subscribers in the order they are posted.
    When all subscribers are dispatched to using a direct executor (which dispatches on the same thread that posts the event), this yields a breadth-first dispatch order on each thread. That is, all subscribers to a single event A will be called before any subscribers to any events B and C that are posted to the event bus by the subscribers to A.
-2. Immediate Dispatcher: dispatches events to subscribers immediately as they're posted without using an intermediate queue to change the dispatch order. This is effectively a depth-first dispatch order, vs. breadth-first when using a queue. If an subscriber method generates a new event, this dispatcher will deliver that event first and then continues deliver the original event to other listeners.
+2. **Immediate Dispatcher**: dispatches events to subscribers immediately as they're posted without using an intermediate queue to change the dispatch order. This is effectively a depth-first dispatch order, vs. breadth-first when using a queue. If an subscriber method generates a new event, this dispatcher will deliver that event first and then continues deliver the original event to other listeners.
 
 ### Subscribing
 Subscribe to events by registering listeners to the bus. Subscriber methods in a listener should be annotated with `@Subscribe` and the method should take only a single parameter, the type of which will be the event to subscribe to. The registry will traverse the listener class hierarchy and add methods from base classes or interfaces that are annotated.
@@ -77,7 +77,7 @@ bus.unregister(listener);
         // deadEvent.getEvent(); // the event that could not be delivered.
     }
 ```
-* **ExceptionEvent**: When any exceptions occur on the bus during handler execution, this event will be published. This useful for logging and should be handled by the application. It provides access to the listener object, subscriber method, the event posted and the original exception that caused this event to be published. This can be handled similar to any other event as:
+* **ExceptionEvent**: When any exceptions occur on the bus during handler execution, this event will be published. This is useful for logging and should be handled by the application. It provides access to the listener object, subscriber method, the posted event and the original exception that caused this event to be published. This can be handled similar to any other event as:
 ```java
     @Subscribe
     public void onException(ExceptionEvent exceptionEvent) {
