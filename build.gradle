@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 group 'io.github.pustike'
-version '0.1.0'
+version '0.2.0'
 description 'Event Bus based on publish-subscribe pattern.'
 
 apply plugin: 'java'

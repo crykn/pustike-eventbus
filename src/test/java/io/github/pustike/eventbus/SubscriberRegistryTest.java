@@ -172,7 +172,7 @@ public class SubscriberRegistryTest extends TestCase {
                         HierarchyFixtureSubinterface.class,
                         HierarchyFixtureParent.class,
                         HierarchyFixture.class),
-                SubscriberRegistry.flattenHierarchyNotCached(HierarchyFixture.class));
+                new DefaultSubscriberLoader().flattenHierarchyNotCached(HierarchyFixture.class));
     }
 
     private interface HierarchyFixtureInterface {

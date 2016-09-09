@@ -16,13 +16,9 @@
 package io.github.pustike.eventbus;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
 
 /**
  * Dispatches events to listeners, and provides ways for listeners to register themselves.
@@ -91,7 +87,7 @@ public final class EventBus {
      * @param identifier a brief name for this bus, for logging purposes.
      */
     public EventBus(String identifier) {
-        this(identifier, Dispatcher.perThreadDispatchQueue(), createDirectExecutor(), null, null);
+        this(identifier, Dispatcher.perThreadDispatchQueue(), createDirectExecutor(), null);
     }
 
     /**
@@ -100,34 +96,21 @@ public final class EventBus {
      * @param executor to dispatch events received from the dispatcher.
      */
     public EventBus(Dispatcher dispatcher, Executor executor) {
-        this("default", dispatcher, executor, null, null);
+        this("default", dispatcher, executor, null);
     }
 
     /**
      * Creates a new EventBus using external cache for subscriberMethods and eventSuperTypes.
-     *
-     * <p>If subscriberMethodsLoader or typeHierarchyLoader is null, an internal cache is created to store them. To use
-     * an external cache the following approach can be used. For ex. using Caffeine cache:
-     * <pre>{@code
-     * LoadingCache<Class<?>, List<Method>> subscriberMethodCache = Caffeine.newBuilder()
-     *      .weakKeys().build(SubscriberRegistry::getAnnotatedMethodsNotCached);
-     * LoadingCache<Class<?>, Set<Class<?>>> typeHierarchyCache = Caffeine.newBuilder()
-     *      .weakKeys().weakValues().build(SubscriberRegistry::flattenHierarchyNotCached);
-     * final EventBus eventBus = new EventBus("default", Dispatcher.perThreadDispatchQueue(), Runnable::run,
-     *      subscriberMethodCache::get, typeHierarchyCache::get);
-     * }</pre>
      * @param identifier a brief name for this bus, for logging purposes.
      * @param dispatcher handler for dispatching events to subscribers
      * @param executor to dispatch events received from the dispatcher.
-     * @param subscriberMethodsLoader the function to find subscriberMethods from cache
+     * @param subscriberLoader the cache for subscriberMethods and eventTypeHierarchy
      */
-    public EventBus(String identifier, Dispatcher dispatcher, Executor executor,
-                    Function<Class<?>, List<Method>> subscriberMethodsLoader,
-                    Function<Class<?>, Set<Class<?>>> typeHierarchyLoader) {
+    public EventBus(String identifier, Dispatcher dispatcher, Executor executor, SubscriberLoader subscriberLoader) {
         this.identifier = Objects.requireNonNull(identifier);
         this.executor = Objects.requireNonNull(executor);
         this.dispatcher = Objects.requireNonNull(dispatcher);
-        this.subscriberRegistry = new SubscriberRegistry(this, subscriberMethodsLoader, typeHierarchyLoader);
+        this.subscriberRegistry = new SubscriberRegistry(this, subscriberLoader);
     }
 
     /**

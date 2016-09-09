@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.function.Function;
 
 /**
  * Registry of subscribers to a single event bus.
@@ -50,44 +48,23 @@ final class SubscriberRegistry {
     private final ConcurrentMap<Integer, CopyOnWriteArraySet<Subscriber>> subscribers;
 
     /**
-     * A thread-safe cache that contains the mapping from each class to all methods in that class and all super-classes,
-     * that are annotated with {@code @Subscribe}.
-     */
-    private final Function<Class<?>, List<Method>> subscribeMethodsLoader;
-    /** The internal cache to store subscribeMethods, when no external cache is provided. */
-    private Map<Class<?>, List<Method>> internalCache;
-
-    /** Function to load the event type hierarchy from an external cache. */
-    private final Function<Class<?>, Set<Class<?>>> typeHierarchyLoader;
-    /** The internal cache to store eventType hierarchy, when no external loader is provided. */
-    private Map<Class<?>, Set<Class<?>>> typeHierarchyCache;
-
-    /**
      * The event bus this registry belongs to.
      */
     private final EventBus bus;
 
+    /**
+     * The cache for subscriberMethods and eventTypeHierarchy.
+     */
+    private final SubscriberLoader subscriberLoader;
+
     SubscriberRegistry(EventBus bus) {
-        this(bus, null, null);
+        this(bus, null);
     }
 
-    SubscriberRegistry(EventBus bus, Function<Class<?>, List<Method>> subscribeMethodsLoader,
-                       Function<Class<?>, Set<Class<?>>> typeHierarchyLoader) {
+    SubscriberRegistry(EventBus bus, SubscriberLoader subscriberLoader) {
         this.bus = Objects.requireNonNull(bus);
         this.subscribers = new ConcurrentHashMap<>();
-        if (subscribeMethodsLoader == null) {
-            this.internalCache = new ConcurrentHashMap<>();
-            Function<Class<?>, List<Method>> getAnnotatedMethods = SubscriberRegistry::getAnnotatedMethodsNotCached;
-            subscribeMethodsLoader = targetClass -> internalCache.computeIfAbsent(targetClass, getAnnotatedMethods);
-        }
-        this.subscribeMethodsLoader = subscribeMethodsLoader;
-
-        if (typeHierarchyLoader == null) {
-            this.typeHierarchyCache = new ConcurrentHashMap<>();
-            Function<Class<?>, Set<Class<?>>> doFlattenHierarchy = SubscriberRegistry::flattenHierarchyNotCached;
-            typeHierarchyLoader = eventClass -> typeHierarchyCache.computeIfAbsent(eventClass, doFlattenHierarchy);
-        }
-        this.typeHierarchyLoader = typeHierarchyLoader;
+        this.subscriberLoader = subscriberLoader == null ? new DefaultSubscriberLoader() : subscriberLoader;
     }
 
     /**
@@ -142,7 +119,7 @@ final class SubscriberRegistry {
             CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
             return eventSubscribers != null ? eventSubscribers.iterator() : Collections.emptyIterator();
         } else {
-            Set<Class<?>> eventTypes = flattenHierarchy(event.getClass());
+            Set<Class<?>> eventTypes = subscriberLoader.flattenHierarchy(event.getClass());
             LinkedList<Iterator<Subscriber>> subscriberIterators = new LinkedList<>();
             for (Class<?> eventType : eventTypes) {
                 int hashCode = eventType.getName().hashCode();
@@ -155,33 +132,6 @@ final class SubscriberRegistry {
         }
     }
 
-    private Set<Class<?>> flattenHierarchy(Class<?> concreteClass) {
-        return typeHierarchyLoader.apply(concreteClass);
-    }
-
-    /**
-     * Find all super classes and interfaces for the given concrete class.
-     *
-     * <p>This can be used in typeHierarchyLoader when creating eventBus as:
-     * <pre>{@code
-     * LoadingCache<Class<?>, Set<Class<?>>> typeHierarchyCache = Caffeine.newBuilder()
-     *      .weakKeys().weakValues().build(SubscriberRegistry::flattenHierarchyNotCached);
-     * }</pre>
-     * @param concreteClass the event class
-     * @return a list of subscriber methods
-     */
-    public static Set<Class<?>> flattenHierarchyNotCached(Class<?> concreteClass) {
-        Set<Class<?>> allSuperTypes = new LinkedHashSet<>();
-        while (concreteClass != null) {
-            allSuperTypes.add(concreteClass);
-            for (Class<?> interfaceType : concreteClass.getInterfaces()) {
-                allSuperTypes.addAll(flattenHierarchyNotCached(interfaceType));
-            }
-            concreteClass = concreteClass.getSuperclass();
-        }
-        return Collections.unmodifiableSet(allSuperTypes);
-    }
-
     /**
      * Returns all subscribers for the given listener grouped by the type of event they subscribe to.
      */
@@ -189,7 +139,7 @@ final class SubscriberRegistry {
         Map<Integer, List<Subscriber>> methodsInListener = new HashMap<>();
         WeakReference<?> weakListener = new WeakReference<>(listener);
         Class<?> clazz = listener.getClass();
-        for (Method method : getAnnotatedMethods(clazz)) {
+        for (Method method : subscriberLoader.findSubscriberMethods(clazz)) {
             int hashCode = computeParameterHashCode(method);
             List<Subscriber> subscriberList = methodsInListener.get(hashCode);
             if (subscriberList == null) {
@@ -213,43 +163,6 @@ final class SubscriberRegistry {
         return parameterClass.getName().hashCode();
     }
 
-    private List<Method> getAnnotatedMethods(Class<?> clazz) {
-        return subscribeMethodsLoader.apply(clazz);
-    }
-
-    /**
-     * Find all methods in the given class and all it's super-classes, that are annotated with {@code @Subscribe}.
-     *
-     * <p>This can be used in subscribeMethodsLoader when creating eventBus, as:
-     * <pre>{@code
-     * LoadingCache<Class<?>, List<Method>> subscriberMethodCache = Caffeine.newBuilder()
-     *      .weakKeys().build(SubscriberRegistry::getAnnotatedMethodsNotCached);
-     * }</pre>
-     * @param clazz the target listener class
-     * @return a list of subscriber methods
-     */
-    public static List<Method> getAnnotatedMethodsNotCached(Class<?> clazz) {
-        Map<Integer, Method> subscribeMethods = new HashMap<>();
-        Set<Class<?>> allSuperTypes = flattenHierarchyNotCached(clazz);
-        for (Class<?> superType : allSuperTypes) {
-            for (Method method : superType.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(Subscribe.class) && !method.isSynthetic()) {
-                    Class<?>[] parameterTypes = method.getParameterTypes();
-                    if (parameterTypes.length != 1) {
-                        String message = "Method %s has @Subscribe annotation but has %d parameters."
-                                + " EventHandler methods must have exactly 1 parameter.";
-                        throw new IllegalArgumentException(String.format(message, method, parameterTypes.length));
-                    }
-                    int hashCode = Objects.hash(method.getName(), method.getParameterTypes());
-                    if (!subscribeMethods.containsKey(hashCode)) {
-                        subscribeMethods.put(hashCode, method);
-                    }
-                }
-            }
-        }
-        return Collections.unmodifiableList(new ArrayList<>(subscribeMethods.values()));
-    }
-
     private static <T> T firstNonNull(T first, T second) {
         return first != null ? first : Objects.requireNonNull(second);
     }
@@ -259,12 +172,7 @@ final class SubscriberRegistry {
      */
     void clear() {
         subscribers.clear();
-        if (internalCache != null) {
-            internalCache.clear();
-        }
-        if (typeHierarchyCache != null) {
-            typeHierarchyCache.clear();
-        }
+        subscriberLoader.invalidateAll();
     }
 
     Set<Subscriber> getSubscribersForTesting(Class<?> eventType) {
