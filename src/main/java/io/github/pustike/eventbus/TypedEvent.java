@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 the original author or authors.
+ * Copyright (C) 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.EventObject;
 
 /**
  * Typed event that provides the type of source object used.
+ * @param <T> the type of event object being published
  */
 public class TypedEvent<T> extends EventObject implements TypeSupplier {
     private final Object eventContext;
@@ -64,6 +65,7 @@ public class TypedEvent<T> extends EventObject implements TypeSupplier {
 
     /**
      * Gets the event context if available, can be null.
+     * @param <V> the type of event context value
      * @return event context if available, can be null
      */
     @SuppressWarnings("unchecked")

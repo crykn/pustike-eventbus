@@ -14,11 +14,31 @@ Pustike EventBus is an effort to extract only the event bus library from Guava p
 * Only ~20kB in size when using default subscriber cache
 * Java 8 as the min requirement (Guava supports Java 6 onwards)
 
+### Latest release
+The most recent release is v1.0.0, released on March 07, 2017.
+
+- API docs can be accessed [here](http://pustike.github.io/pustike-eventbus/releases/latest/api/).
+
+To add a dependency using Maven, use the following:
+```xml
+    <dependency>
+        <groupId>io.github.pustike</groupId>
+        <artifactId>pustike-eventbus</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+```
+To add a dependency using Gradle:
+```
+dependencies {
+    compile 'io.github.pustike:pustike-eventbus:1.0.0'
+}
+```
+
 Event Bus
 ---------
-An event bus is a library providing publisher/subscriber pattern for loose coupling between components(event senders and receivers), by sending messages to each other indirectly. Some objects register with the bus to be notified when certain events of interest occur. And some publish events on the bus. The bus notifies each of the registrants when the event is published. So the registrant objects and the event-source objects need not know about each other directly. Each may join or depart the bus at any time. Thus it enables central communication between components, simplifies the code and removes direct dependencies.
+An event bus is a library providing publisher/subscriber pattern for loose coupling between components(event senders and receivers), by sending messages to each other indirectly. Some objects register with the bus to be notified when certain events of interest occur. And some publish events on the bus. The bus notifies each of the registrants when the event is published. So registrant objects and event-source objects need not know about each other directly. Each may join or depart the bus at any time. Thus it enables central communication between components, simplifies the code and removes direct dependencies.
 
-To create an instance of event bus with a default identifier and using a per thread dispatch queue and a direct executor which publishes events in the same thread:
+To create an instance of the event bus with a default identifier and using a per thread dispatch queue and a direct executor which publishes events in the same thread:
 ```java
 EventBus bus = new EventBus();
 ```

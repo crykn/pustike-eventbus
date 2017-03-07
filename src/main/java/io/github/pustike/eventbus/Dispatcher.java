@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 the original author or authors.
+ * Copyright (C) 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ public abstract class Dispatcher {
      * that posts the event), this yields a breadth-first dispatch order on each thread. That is, all subscribers to a
      * single event A will be called before any subscribers to any events B and C that are posted to the event bus by
      * the subscribers to A.
+     * @return the per thread dispatcher
      */
     public static Dispatcher perThreadDispatchQueue() {
         return new PerThreadQueuedDispatcher();
@@ -48,6 +49,7 @@ public abstract class Dispatcher {
      * Returns a dispatcher that dispatches events to subscribers immediately as they're posted without using an
      * intermediate queue to change the dispatch order. This is effectively a depth-first dispatch order, vs.
      * breadth-first when using a queue.
+     * @return the immediate dispatcher
      */
     public static Dispatcher immediate() {
         return ImmediateDispatcher.INSTANCE;
