@@ -17,7 +17,7 @@ Pustike EventBus is an effort to extract only the event bus library from Guava p
 ### Latest release
 The most recent release is v1.0.0, released on March 07, 2017.
 
-- API docs can be accessed [here](http://pustike.github.io/pustike-eventbus/releases/latest/api/).
+- API docs can be accessed [here](http://pustike.github.io/pustike-eventbus/docs/latest/api/).
 
 To add a dependency using Maven, use the following:
 ```xml
