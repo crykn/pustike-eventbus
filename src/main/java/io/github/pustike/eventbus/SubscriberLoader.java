@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Cache for subscriberMethods that are annotated with {@code @Subscribe} in a given class and all it's super-classes.
+ * Cache for subscriberMethods that are annotated with {@code @Subscribe} in a given class and all its super-classes.
  * And typeHierarchy cache with all super-classes and interfaces for a concrete class.
  */
 public interface SubscriberLoader {
     /**
-     * Find all methods in the given class and all it's super-classes, that are annotated with {@code @Subscribe}.
+     * Find all methods in the given class and all its super-classes, that are annotated with {@code @Subscribe}.
      * @param clazz the target listener class
      * @return a list of subscriber methods
      */

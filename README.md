@@ -81,7 +81,7 @@ bus.unregister(listener);
 ```
 
 ### Special Event Types
-* **Typed Event**: Instead of creating separate classes for each type of events, the TypedEvent provides a type aware event with an optional context information. This event will be delivered to only those subscriber methods matching to it's actual type. For example: in place of creating `CustomerEvent`, `VendorEvent`, etc, the `TypedEvent<Customer>`, `TypedEvent<Vendor>` can be used. The context information can be useful in communicating the state of the object, like `new TypedEvent<>(customer, "MODIFIED");`
+* **Typed Event**: Instead of creating separate classes for each type of events, the TypedEvent provides a type aware event with an optional context information. This event will be delivered to only those subscriber methods matching to its actual type. For example: in place of creating `CustomerEvent`, `VendorEvent`, etc, the `TypedEvent<Customer>`, `TypedEvent<Vendor>` can be used. The context information can be useful in communicating the state of the object, like `new TypedEvent<>(customer, "MODIFIED");`
 ```java
     @Subscribe
     public void onTypedStringEvent(TypedEvent<String> event) {

@@ -57,7 +57,7 @@ public class DefaultSubscriberLoader implements SubscriberLoader {
     }
 
     /**
-     * Find all methods in the given class and all it's super-classes, that are annotated with {@code @Subscribe}.
+     * Find all methods in the given class and all its super-classes, that are annotated with {@code @Subscribe}.
      * @param clazz the target listener class
      * @return a list of subscriber methods
      */
