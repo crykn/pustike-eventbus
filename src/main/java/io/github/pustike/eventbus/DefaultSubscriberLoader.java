@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2016-2017 the original author or authors.
+ * Copyright (C) 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,11 +16,9 @@
 package io.github.pustike.eventbus;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -31,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultSubscriberLoader implements SubscriberLoader {
     /** The internal cache to store subscribeMethods, when no external cache is provided. */
-    private final Map<Class<?>, List<Method>> subscribeMethodsCache;
+    private final Map<Class<?>, Iterable<Method>> subscribeMethodsCache;
     /** The internal cache to store eventType hierarchy, when no external loader is provided. */
     private final Map<Class<?>, Set<Class<?>>> typeHierarchyCache;
 
@@ -41,7 +39,7 @@ public class DefaultSubscriberLoader implements SubscriberLoader {
     }
 
     @Override
-    public List<Method> findSubscriberMethods(Class<?> clazz) {
+    public Iterable<Method> findSubscriberMethods(Class<?> clazz) {
         return subscribeMethodsCache.computeIfAbsent(clazz, this::findAnnotatedMethodsNotCached);
     }
 
@@ -61,7 +59,7 @@ public class DefaultSubscriberLoader implements SubscriberLoader {
      * @param clazz the target listener class
      * @return a list of subscriber methods
      */
-    protected final List<Method> findAnnotatedMethodsNotCached(Class<?> clazz) {
+    protected final Iterable<Method> findAnnotatedMethodsNotCached(Class<?> clazz) {
         Map<Integer, Method> subscribeMethods = new HashMap<>();
         Set<Class<?>> allSuperTypes = flattenHierarchy(clazz);
         for (Class<?> superType : allSuperTypes) {
@@ -80,7 +78,7 @@ public class DefaultSubscriberLoader implements SubscriberLoader {
                 }
             }
         }
-        return Collections.unmodifiableList(new ArrayList<>(subscribeMethods.values()));
+        return Collections.unmodifiableCollection(subscribeMethods.values());
     }
 
     /**

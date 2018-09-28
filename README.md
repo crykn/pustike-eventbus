@@ -1,4 +1,4 @@
-Pustike EventBus
+Pustike EventBus     [![][Maven Central img]][Maven Central] [![][Javadocs img]][Javadocs] [![][license img]][license]
 ================
 Pustike EventBus is a fork of [Guava EventBus](https://github.com/google/guava/wiki/EventBusExplained), which is probably the most commonly known event bus for Java. Most of the documentation here and test cases are from Guava itself.
 
@@ -12,27 +12,27 @@ Pustike EventBus is an effort to extract only the event bus library from Guava p
 * Unregistering a not-registered subscriber doesn't throw exception
 * Allows using an external cache for loading subscriber methods and event type hierarchy
 * Only ~20kB in size when using default subscriber cache
-* Java 8 as the min requirement (Guava supports Java 6 onwards)
+* Java 11 as the min requirement (Guava supports Java 6 onwards)
 
-### Latest release
-The most recent release is v1.0.0, released on March 07, 2017.
+**Documentation:** [Latest javadocs](https://pustike.github.io/pustike-eventbus/docs/latest/api/)
 
-- API docs can be accessed [here](http://pustike.github.io/pustike-eventbus/docs/latest/api/).
+**Latest Release:** The most recent release is v1.5.0 (2018-09-28).
 
 To add a dependency using Maven, use the following:
 ```xml
     <dependency>
         <groupId>io.github.pustike</groupId>
         <artifactId>pustike-eventbus</artifactId>
-        <version>1.0.0</version>
+        <version>1.5.0</version>
     </dependency>
 ```
 To add a dependency using Gradle:
 ```
 dependencies {
-    compile 'io.github.pustike:pustike-eventbus:1.0.0'
+    compile 'io.github.pustike:pustike-eventbus:1.5.0'
 }
 ```
+Or, download the [latest JAR](https://search.maven.org/remote_content?g=io.github.pustike&a=pustike-eventbus&v=LATEST)
 
 Event Bus
 ---------
@@ -148,7 +148,7 @@ Other EventBus Libraries
 ------------------------
 * [Guava EventBus](https://github.com/google/guava/wiki/EventBusExplained) allows publish-subscribe-style event communication
 
-* [Square](http://square.github.io/otto)'s [Otto](http://github.com/square/otto): An enhanced event bus with emphasis on Android support.
+* [Square](https://square.github.io/otto)'s [Otto](https://github.com/square/otto): An enhanced event bus with emphasis on Android support.
 
 * GreenRobot [Event Bus](https://github.com/greenrobot/EventBus): Android optimized event bus that simplifies communication between Activities, Fragments, Threads, Services, etc. Less code, better quality.
 
@@ -158,11 +158,11 @@ Other EventBus Libraries
 
 * [Mycila PubSub](https://github.com/mycila/pubsub) is a new powerful event framework for in-memory event management.
 
-* [Spring Framework](http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#context-functionality-events) Application Event publishing support using spring context.
+* [Spring Framework](https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#context-functionality-events) Application Event publishing support using spring context.
 
 License
 -------
-This library is published under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+This library is published under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 ```
  Copyright (C) 2016 the original author or authors.
 
@@ -170,7 +170,7 @@ This library is published under the [Apache License, Version 2.0](http://www.apa
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
 
- http://www.apache.org/licenses/LICENSE-2.0
+ https://www.apache.org/licenses/LICENSE-2.0
 
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
@@ -178,3 +178,12 @@ This library is published under the [Apache License, Version 2.0](http://www.apa
  See the License for the specific language governing permissions and
  limitations under the License.
 ```
+
+[Maven Central]:https://maven-badges.herokuapp.com/maven-central/io.github.pustike/pustike-eventbus
+[Maven Central img]:https://maven-badges.herokuapp.com/maven-central/io.github.pustike/pustike-eventbus/badge.svg
+
+[Javadocs]:https://javadoc.io/doc/io.github.pustike/pustike-eventbus
+[Javadocs img]:https://javadoc.io/badge/io.github.pustike/pustike-eventbus.svg
+
+[license]:LICENSE
+[license img]:https://img.shields.io/badge/license-Apache%202-blue.svg

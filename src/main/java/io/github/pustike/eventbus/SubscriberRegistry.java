@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2016-2017 the original author or authors.
+ * Copyright (C) 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -88,23 +88,24 @@ final class SubscriberRegistry {
      * Unregisters all subscribers on the given listener object.
      */
     void unregister(Object listener) {
-        Map<Integer, List<Subscriber>> listenerMethods = findAllSubscribers(listener);
-        for (Map.Entry<Integer, List<Subscriber>> entry : listenerMethods.entrySet()) {
-            int hashCode = entry.getKey();
-            Collection<Subscriber> listenerMethodsForType = entry.getValue();
-            CopyOnWriteArraySet<Subscriber> currentSubscribers = subscribers.get(hashCode);
+        if (listener instanceof Subscriber) {
+            Subscriber subscriber = (Subscriber) listener;
+            CopyOnWriteArraySet<Subscriber> currentSubscribers = subscribers.get(subscriber.registryKey);
             if (currentSubscribers != null) {
-                currentSubscribers.removeAll(listenerMethodsForType);
+                currentSubscribers.remove(subscriber);
             }
-            // don't try to remove the set if it's empty; that can't be done safely without a lock
-            // anyway, if the set is empty it'll just be wrapping an array of length 0
-        }
-    }
-
-    void unregister(Subscriber subscriber) {
-        CopyOnWriteArraySet<Subscriber> currentSubscribers = subscribers.get(subscriber.registryKey);
-        if (currentSubscribers != null) {
-            currentSubscribers.remove(subscriber);
+        } else {
+            Map<Integer, List<Subscriber>> listenerMethods = findAllSubscribers(listener);
+            for (Map.Entry<Integer, List<Subscriber>> entry : listenerMethods.entrySet()) {
+                int hashCode = entry.getKey();
+                Collection<Subscriber> listenerMethodsForType = entry.getValue();
+                CopyOnWriteArraySet<Subscriber> currentSubscribers = subscribers.get(hashCode);
+                if (currentSubscribers != null) {
+                    currentSubscribers.removeAll(listenerMethodsForType);
+                }
+                // don't try to remove the set if it's empty; that can't be done safely without a lock
+                // anyway, if the set is empty it'll just be wrapping an array of length 0
+            }
         }
     }
 
@@ -115,7 +116,7 @@ final class SubscriberRegistry {
     Iterator<Subscriber> getSubscribers(Object event) {
         if (event instanceof TypeSupplier) {
             Class<?> eventSourceType = ((TypeSupplier) event).getType();
-            int hashCode = (31 + event.getClass().getName().hashCode()) * 31 + eventSourceType.getName().hashCode();
+            int hashCode = Objects.hash(event.getClass().getName(), eventSourceType.getName());
             CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
             return eventSubscribers != null ? eventSubscribers.iterator() : Collections.emptyIterator();
         } else {
@@ -141,11 +142,7 @@ final class SubscriberRegistry {
         Class<?> clazz = listener.getClass();
         for (Method method : subscriberLoader.findSubscriberMethods(clazz)) {
             int hashCode = computeParameterHashCode(method);
-            List<Subscriber> subscriberList = methodsInListener.get(hashCode);
-            if (subscriberList == null) {
-                subscriberList = new ArrayList<>();
-                methodsInListener.put(hashCode, subscriberList);
-            }
+            List<Subscriber> subscriberList = methodsInListener.computeIfAbsent(hashCode, k -> new ArrayList<>());
             subscriberList.add(Subscriber.create(bus, weakListener, method, hashCode));
         }
         return methodsInListener;
@@ -156,9 +153,8 @@ final class SubscriberRegistry {
         Type parameterType = method.getGenericParameterTypes()[0];
         if (parameterClass.equals(TypedEvent.class) && parameterType instanceof ParameterizedType) {
             ParameterizedType firstParam = (ParameterizedType) parameterType;
-            int hashCode = firstParam.getRawType().getTypeName().hashCode();
             Type[] typeArguments = firstParam.getActualTypeArguments();
-            return (31 + hashCode) * 31 + typeArguments[0].getTypeName().hashCode();
+            return Objects.hash(firstParam.getRawType().getTypeName(), typeArguments[0].getTypeName());
         }
         return parameterClass.getName().hashCode();
     }
@@ -186,7 +182,7 @@ final class SubscriberRegistry {
     }
 
     private static final class IteratorAggregator<E> implements Iterator<E> {
-        private LinkedList<Iterator<E>> internalIterators;
+        private final LinkedList<Iterator<E>> internalIterators;
         private Iterator<E> currentIterator = null;
 
         private IteratorAggregator(List<Iterator<E>> iterators) {
@@ -204,8 +200,8 @@ final class SubscriberRegistry {
             if (currentIterator != null && currentIterator.hasNext()) {
                 return currentIterator.next();
             }
-            if (!internalIterators.isEmpty()) {
-                currentIterator = internalIterators.pollFirst();
+            currentIterator = internalIterators.pollFirst();
+            if (currentIterator != null) {
                 return currentIterator.next();
             }
             throw new NoSuchElementException();

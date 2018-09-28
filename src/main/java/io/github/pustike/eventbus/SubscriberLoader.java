@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2016-2017 the original author or authors.
+ * Copyright (C) 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,6 @@
 package io.github.pustike.eventbus;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,7 +28,7 @@ public interface SubscriberLoader {
      * @param clazz the target listener class
      * @return a list of subscriber methods
      */
-    List<Method> findSubscriberMethods(Class<?> clazz);
+    Iterable<Method> findSubscriberMethods(Class<?> clazz);
 
     /**
      * Find all super classes and interfaces for the given concrete class.

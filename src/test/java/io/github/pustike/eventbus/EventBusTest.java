@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2016-2017 the original author or authors.
+ * Copyright (C) 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -88,7 +88,7 @@ public class EventBusTest extends TestCase {
 
         // Two additional event types: Object and Comparable<?> (played by Integer)
         Object objEvent = new Object();
-        Object compEvent = new Integer(6);
+        Object compEvent = 6;
 
         bus.publish(EVENT);
         bus.publish(objEvent);
@@ -150,7 +150,7 @@ public class EventBusTest extends TestCase {
                 exceptionHandler.exceptionEvent.getSubscriberMethod());
     }
 
-    public void testSubscriberThrowsExceptionHandlerThrowsException() throws Exception {
+    public void testSubscriberThrowsExceptionHandlerThrowsException() {
         final EventBus eventBus = new EventBus();
         eventBus.register(new ThrowingSubscriberExceptionHandler());
         final Object subscriber = new Object() {
@@ -333,7 +333,7 @@ public class EventBusTest extends TestCase {
      * @author cbiffle
      */
     public static class GhostCatcher {
-        private List<DeadEvent> events = new ArrayList<>();
+        private final List<DeadEvent> events = new ArrayList<>();
 
         @Subscribe
         public void ohNoesIHaveDied(DeadEvent event) {
@@ -359,8 +359,8 @@ public class EventBusTest extends TestCase {
     }
 
     public static class TypedEventSubscriber {
-        private List<TypedEvent<String>> typedStringEvents = new ArrayList<>();
-        private List<TypedEvent<Integer>> typedIntEvents = new ArrayList<>();
+        private final List<TypedEvent<String>> typedStringEvents = new ArrayList<>();
+        private final List<TypedEvent<Integer>> typedIntEvents = new ArrayList<>();
 
         @Subscribe
         public void onTypedStringEvent(TypedEvent<String> event) {
