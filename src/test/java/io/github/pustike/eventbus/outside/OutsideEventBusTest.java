@@ -36,14 +36,15 @@ public class OutsideEventBusTest extends TestCase {
     public void testAnonymous() {
         final AtomicReference<String> holder = new AtomicReference<>();
         final AtomicInteger deliveries = new AtomicInteger();
+
         EventBus bus = new EventBus();
-        bus.register(new Object() {
+        Object listener = new Object() {
             @Subscribe
-            public void accept(String str) {
-                holder.set(str);
-                deliveries.incrementAndGet();
+            public void onMessageEvent(String message) {
+                // process the message here...
             }
-        });
+        };
+        bus.register(listener);
 
         String EVENT = "Hello!";
         bus.publish(EVENT);

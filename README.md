@@ -14,9 +14,9 @@ Pustike EventBus is an effort to extract only the event bus library from Guava p
 * Only ~20kB in size when using default subscriber cache
 * Java 11 as the min requirement (Guava supports Java 6 onwards)
 
-**Documentation:** [Latest javadocs](https://pustike.github.io/pustike-eventbus/docs/latest/api/)
+**Documentation:** Latest javadocs is available [here][Javadocs].
 
-**Latest Release:** The most recent release is v1.5.0 (2018-09-28).
+**Release:** The most recent release is v1.5.0 (2018-09-28).
 
 To add a dependency using Maven, use the following:
 ```xml

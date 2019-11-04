@@ -18,7 +18,6 @@ package io.github.pustike.eventbus;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -220,7 +219,7 @@ public class EventBusTest extends TestCase {
                 expectedEvents, catcher1.getEvents());
 
         assertEquals("One correct event should be delivered.",
-                Collections.singletonList(EVENT), catcher2.getEvents());
+                List.of(EVENT), catcher2.getEvents());
 
         bus.unregister(catcher1);
         bus.publish(EVENT);
@@ -261,7 +260,7 @@ public class EventBusTest extends TestCase {
         assertEquals("Unexpected number of catchers in the list",
                 numberOfCatchers, catchers.size());
         bus.publish(EVENT);
-        List<String> expectedEvents = Collections.singletonList(EVENT);
+        List<String> expectedEvents = List.of(EVENT);
         for (StringCatcher catcher : catchers) {
             assertEquals("One of the registered catchers did not receive an event.",
                     expectedEvents, catcher.getEvents());

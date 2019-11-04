@@ -17,7 +17,6 @@ package io.github.pustike.eventbus;
 
 import junit.framework.TestCase;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -34,14 +33,14 @@ public class DispatcherTest extends TestCase {
     private final IntegerSubscriber i1 = new IntegerSubscriber("i1");
     private final IntegerSubscriber i2 = new IntegerSubscriber("i2");
     private final IntegerSubscriber i3 = new IntegerSubscriber("i3");
-    private final List<Subscriber> integerSubscribers = Arrays.asList(
+    private final List<Subscriber> integerSubscribers = List.of(
             subscriber(bus, i1, "handleInteger", Integer.class),
             subscriber(bus, i2, "handleInteger", Integer.class),
             subscriber(bus, i3, "handleInteger", Integer.class));
 
     private final StringSubscriber s1 = new StringSubscriber("s1");
     private final StringSubscriber s2 = new StringSubscriber("s2");
-    private final List<Subscriber> stringSubscribers = Arrays.asList(
+    private final List<Subscriber> stringSubscribers = List.of(
             subscriber(bus, s1, "handleString", String.class),
             subscriber(bus, s2, "handleString", String.class));
 

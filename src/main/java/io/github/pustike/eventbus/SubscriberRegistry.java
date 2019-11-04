@@ -178,7 +178,7 @@ final class SubscriberRegistry {
             hashCode = (31 + hashCode) * 31 + eventSourceType.getName().hashCode();
         }*/
         CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
-        return eventSubscribers != null ? eventSubscribers : Collections.emptySet();
+        return eventSubscribers != null ? eventSubscribers : Set.of();
     }
 
     private static final class IteratorAggregator<E> implements Iterator<E> {

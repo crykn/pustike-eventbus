@@ -18,7 +18,6 @@ package io.github.pustike.eventbus;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -38,7 +37,7 @@ public class ReentrantEventsTest extends TestCase {
         bus.publish(FIRST);
 
         assertEquals("ReentrantEventHater expected 2 events",
-                Arrays.asList(FIRST, SECOND), hater.eventsReceived);
+            List.of(FIRST, SECOND), hater.eventsReceived);
     }
 
     public class ReentrantEventsHater {
@@ -73,7 +72,7 @@ public class ReentrantEventsTest extends TestCase {
         bus.publish(FIRST);
 
         assertEquals("EventRecorder expected events in order",
-                Arrays.asList(FIRST, SECOND), recorder.eventsReceived);
+            List.of(FIRST, SECOND), recorder.eventsReceived);
     }
 
     public class EventProcessor {
