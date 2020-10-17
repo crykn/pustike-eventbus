@@ -16,131 +16,134 @@
 package com.google.common.eventbus;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
 /**
- * A subscriber method on a specific object, plus the executor that should be used for dispatching events to it.
+ * A subscriber method on a specific object, plus the executor that should be
+ * used for dispatching events to it.
  *
- * <p>Two subscribers are equivalent when they refer to the same method on the same object (not class). This property is
- * used to ensure that no subscriber method is registered more than once.
+ * <p>
+ * Two subscribers are equivalent when they refer to the same method on the same
+ * object (not class). This property is used to ensure that no subscriber method
+ * is registered more than once.
+ * 
  * @author Colin Decker
  */
 class Subscriber {
-    /**
-     * Creates a {@code Subscriber} for {@code method} on {@code listener}.
-     */
-    static Subscriber create(EventBus bus, Object listener, Method method, int registryKey) {
-        Subscribe subscribe = method.getAnnotation(Subscribe.class);
-        return subscribe != null && subscribe.threadSafe() ? new Subscriber(bus, listener, method, registryKey)
-                : new SynchronizedSubscriber(bus, listener, method, registryKey);
-    }
+	/**
+	 * Creates a {@code Subscriber} for {@code method} on {@code listener}.
+	 */
+	static Subscriber create(EventBus bus, Object listener, Method method, int registryKey) {
+		Subscribe subscribe = method.getAnnotation(Subscribe.class);
+		return subscribe != null && subscribe.threadSafe() ? new Subscriber(bus, listener, method, registryKey)
+				: new SynchronizedSubscriber(bus, listener, method, registryKey);
+	}
 
-    /** The event bus this subscriber belongs to. */
-    private final EventBus eventBus;
+	/** The event bus this subscriber belongs to. */
+	private final EventBus eventBus;
 
-    /** The object with the subscriber method. */
-    private final Object listener;
+	/** The object with the subscriber method. */
+	private final Object listener;
 
-    /** Subscriber method. */
-    private final Method method;
+	/** Subscriber method. */
+	private final Method method;
 
-    /** The pre-computed hash code. */
-    private final int hashCode;
+	/** The pre-computed hash code. */
+	private final int hashCode;
 
-    /** The parameter hashCode of this subscriber used by the registry. */
-    final int registryKey;
+	/** The parameter hashCode of this subscriber used by the registry. */
+	final int registryKey;
 
-    private Subscriber(EventBus eventBus, Object listener, Method method, int registryKey) {
-        this.eventBus = Objects.requireNonNull(eventBus);
-        this.listener = Objects.requireNonNull(listener);
-        if (!method.trySetAccessible()) {
-            throw new InaccessibleObjectException("couldn't enable access to method: " + method);
-        }
-        this.method = method;
-        this.registryKey = registryKey;
-        this.hashCode = computeHashCode();
-    }
+	private Subscriber(EventBus eventBus, Object listener, Method method, int registryKey) {
+		this.eventBus = Objects.requireNonNull(eventBus);
+		this.listener = Objects.requireNonNull(listener);
+		method.setAccessible(true); // method.trySetAccessible()
+		this.method = method;
+		this.registryKey = registryKey;
+		this.hashCode = computeHashCode();
+	}
 
-    /**
-     * Dispatches {@code event} to this subscriber using the proper executor.
-     */
-    final void dispatchEvent(final Object event) {
-        eventBus.executor().execute(() -> {
-            try {
-                invokeSubscriberMethod(event);
-            } catch (InvocationTargetException e) {
-                // do not publish if an exception occurs in the exception event handler
-                if (!(event instanceof ExceptionEvent)) {
-                    eventBus.post(new ExceptionEvent(eventBus, getTarget(), method, event, e.getCause()));
-                }
-            }
-        });
-    }
+	/**
+	 * Dispatches {@code event} to this subscriber using the proper executor.
+	 */
+	final void dispatchEvent(final Object event) {
+		eventBus.executor().execute(() -> {
+			try {
+				invokeSubscriberMethod(event);
+			} catch (InvocationTargetException e) {
+				// do not publish if an exception occurs in the exception event handler
+				if (!(event instanceof ExceptionEvent)) {
+					eventBus.post(new ExceptionEvent(eventBus, getTarget(), method, event, e.getCause()));
+				}
+			}
+		});
+	}
 
-    /**
-     * Invokes the subscriber method. This method can be overridden to make the invocation synchronized.
-     */
-    void invokeSubscriberMethod(Object event) throws InvocationTargetException {
-        try {
-            Object target = getTarget();
-            if (target == null) {// if the target object is no longer available,
-                eventBus.unregister(this); // un-subscribe this subscriber!
-                return;
-            }
-            method.invoke(target, event);
-        } catch (IllegalArgumentException e) {
-            throw new Error("Method rejected target/argument: " + event, e);
-        } catch (IllegalAccessException e) {
-            throw new Error("Method became inaccessible: " + event, e);
-        } catch (InvocationTargetException e) {
-            if (e.getCause() instanceof Error) {
-                throw (Error) e.getCause();
-            }
-            throw e;
-        }
-    }
+	/**
+	 * Invokes the subscriber method. This method can be overridden to make the
+	 * invocation synchronized.
+	 */
+	void invokeSubscriberMethod(Object event) throws InvocationTargetException {
+		try {
+			Object target = getTarget();
+			if (target == null) {// if the target object is no longer available,
+				eventBus.unregister(this); // un-subscribe this subscriber!
+				return;
+			}
+			method.invoke(target, event);
+		} catch (IllegalArgumentException e) {
+			throw new Error("Method rejected target/argument: " + event, e);
+		} catch (IllegalAccessException e) {
+			throw new Error("Method became inaccessible: " + event, e);
+		} catch (InvocationTargetException e) {
+			if (e.getCause() instanceof Error) {
+				throw (Error) e.getCause();
+			}
+			throw e;
+		}
+	}
 
-    Object getTarget() {
-        return listener instanceof WeakReference<?> ? ((WeakReference<?>) listener).get() : listener;
-    }
+	Object getTarget() {
+		return listener instanceof WeakReference<?> ? ((WeakReference<?>) listener).get() : listener;
+	}
 
-    private int computeHashCode() {
-        return (31 + method.hashCode()) * 31 + System.identityHashCode(getTarget());
-    }
+	private int computeHashCode() {
+		return (31 + method.hashCode()) * 31 + System.identityHashCode(getTarget());
+	}
 
-    @Override
-    public final int hashCode() {
-        return hashCode;
-    }
+	@Override
+	public final int hashCode() {
+		return hashCode;
+	}
 
-    @Override
-    public final boolean equals(Object obj) {
-        if (obj instanceof Subscriber) {
-            Subscriber that = (Subscriber) obj;
-            // Use == so that different equal instances will still receive events.
-            // We only guard against the case that the same object is registered multiple times
-            return getTarget() == that.getTarget() && method.equals(that.method);
-        }
-        return false;
-    }
+	@Override
+	public final boolean equals(Object obj) {
+		if (obj instanceof Subscriber) {
+			Subscriber that = (Subscriber) obj;
+			// Use == so that different equal instances will still receive events.
+			// We only guard against the case that the same object is registered multiple
+			// times
+			return getTarget() == that.getTarget() && method.equals(that.method);
+		}
+		return false;
+	}
 
-    /**
-     * Subscriber that synchronizes invocations of a method to ensure that only one thread may enter the method at a
-     * time.
-     */
-    static final class SynchronizedSubscriber extends Subscriber {
-        private SynchronizedSubscriber(EventBus bus, Object target, Method method, int registryKey) {
-            super(bus, target, method, registryKey);
-        }
+	/**
+	 * Subscriber that synchronizes invocations of a method to ensure that only one
+	 * thread may enter the method at a time.
+	 */
+	static final class SynchronizedSubscriber extends Subscriber {
+		private SynchronizedSubscriber(EventBus bus, Object target, Method method, int registryKey) {
+			super(bus, target, method, registryKey);
+		}
 
-        @Override
-        void invokeSubscriberMethod(Object event) throws InvocationTargetException {
-            synchronized (this) {
-                super.invokeSubscriberMethod(event);
-            }
-        }
-    }
+		@Override
+		void invokeSubscriberMethod(Object event) throws InvocationTargetException {
+			synchronized (this) {
+				super.invokeSubscriberMethod(event);
+			}
+		}
+	}
 }

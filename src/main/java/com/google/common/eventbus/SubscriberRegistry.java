@@ -36,180 +36,181 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Registry of subscribers to a single event bus.
+ * 
  * @author Colin Decker
  */
 final class SubscriberRegistry {
-    /**
-     * All registered subscribers, indexed by event type.
-     *
-     * <p>The {@link CopyOnWriteArraySet} values make it easy and relatively lightweight to get an immutable snapshot
-     * of all current subscribers to an event without any locking.
-     */
-    private final ConcurrentMap<Integer, CopyOnWriteArraySet<Subscriber>> subscribers;
+	/**
+	 * All registered subscribers, indexed by event type.
+	 *
+	 * <p>
+	 * The {@link CopyOnWriteArraySet} values make it easy and relatively
+	 * lightweight to get an immutable snapshot of all current subscribers to an
+	 * event without any locking.
+	 */
+	private final ConcurrentMap<Integer, CopyOnWriteArraySet<Subscriber>> subscribers;
 
-    /**
-     * The event bus this registry belongs to.
-     */
-    private final EventBus bus;
+	/**
+	 * The event bus this registry belongs to.
+	 */
+	private final EventBus bus;
 
-    /**
-     * The cache for subscriberMethods and eventTypeHierarchy.
-     */
-    private final SubscriberLoader subscriberLoader;
+	/**
+	 * The cache for subscriberMethods and eventTypeHierarchy.
+	 */
+	private final SubscriberLoader subscriberLoader;
 
-    SubscriberRegistry(EventBus bus) {
-        this(bus, null);
-    }
+	SubscriberRegistry(EventBus bus) {
+		this(bus, null);
+	}
 
-    SubscriberRegistry(EventBus bus, SubscriberLoader subscriberLoader) {
-        this.bus = Objects.requireNonNull(bus);
-        this.subscribers = new ConcurrentHashMap<>();
-        this.subscriberLoader = subscriberLoader == null ? new DefaultSubscriberLoader() : subscriberLoader;
-    }
+	SubscriberRegistry(EventBus bus, SubscriberLoader subscriberLoader) {
+		this.bus = Objects.requireNonNull(bus);
+		this.subscribers = new ConcurrentHashMap<>();
+		this.subscriberLoader = subscriberLoader == null ? new DefaultSubscriberLoader() : subscriberLoader;
+	}
 
-    /**
-     * Registers all subscriber methods on the given listener object.
-     */
-    void register(Object listener) {
-        Map<Integer, List<Subscriber>> listenerMethods = findAllSubscribers(listener);
-        for (Map.Entry<Integer, List<Subscriber>> entry : listenerMethods.entrySet()) {
-            int hashCode = entry.getKey();
-            Collection<Subscriber> eventMethodsInListener = entry.getValue();
-            CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
-            if (eventSubscribers == null) {
-                CopyOnWriteArraySet<Subscriber> newSet = new CopyOnWriteArraySet<>();
-                eventSubscribers = firstNonNull(subscribers.putIfAbsent(hashCode, newSet), newSet);
-            }
-            eventSubscribers.addAll(eventMethodsInListener);
-        }
-    }
+	/**
+	 * Registers all subscriber methods on the given listener object.
+	 */
+	void register(Object listener) {
+		Map<Integer, List<Subscriber>> listenerMethods = findAllSubscribers(listener);
+		for (Map.Entry<Integer, List<Subscriber>> entry : listenerMethods.entrySet()) {
+			int hashCode = entry.getKey();
+			Collection<Subscriber> eventMethodsInListener = entry.getValue();
+			CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
+			if (eventSubscribers == null) {
+				CopyOnWriteArraySet<Subscriber> newSet = new CopyOnWriteArraySet<>();
+				eventSubscribers = firstNonNull(subscribers.putIfAbsent(hashCode, newSet), newSet);
+			}
+			eventSubscribers.addAll(eventMethodsInListener);
+		}
+	}
 
-    /**
-     * Unregisters all subscribers on the given listener object.
-     */
-    void unregister(Object listener) {
-        if (listener instanceof Subscriber) {
-            Subscriber subscriber = (Subscriber) listener;
-            CopyOnWriteArraySet<Subscriber> currentSubscribers = subscribers.get(subscriber.registryKey);
-            if (currentSubscribers != null) {
-                currentSubscribers.remove(subscriber);
-            }
-        } else {
-            Map<Integer, List<Subscriber>> listenerMethods = findAllSubscribers(listener);
-            for (Map.Entry<Integer, List<Subscriber>> entry : listenerMethods.entrySet()) {
-                int hashCode = entry.getKey();
-                Collection<Subscriber> listenerMethodsForType = entry.getValue();
-                CopyOnWriteArraySet<Subscriber> currentSubscribers = subscribers.get(hashCode);
-                if (currentSubscribers != null) {
-                    currentSubscribers.removeAll(listenerMethodsForType);
-                }
-                // don't try to remove the set if it's empty; that can't be done safely without a lock
-                // anyway, if the set is empty it'll just be wrapping an array of length 0
-            }
-        }
-    }
+	/**
+	 * Unregisters all subscribers on the given listener object.
+	 */
+	void unregister(Object listener) {
+		if (listener instanceof Subscriber) {
+			Subscriber subscriber = (Subscriber) listener;
+			CopyOnWriteArraySet<Subscriber> currentSubscribers = subscribers.get(subscriber.registryKey);
+			if (currentSubscribers != null) {
+				currentSubscribers.remove(subscriber);
+			}
+		} else {
+			Map<Integer, List<Subscriber>> listenerMethods = findAllSubscribers(listener);
+			for (Map.Entry<Integer, List<Subscriber>> entry : listenerMethods.entrySet()) {
+				int hashCode = entry.getKey();
+				Collection<Subscriber> listenerMethodsForType = entry.getValue();
+				CopyOnWriteArraySet<Subscriber> currentSubscribers = subscribers.get(hashCode);
+				if (currentSubscribers != null) {
+					currentSubscribers.removeAll(listenerMethodsForType);
+				}
+				// don't try to remove the set if it's empty; that can't be done safely without
+				// a lock
+				// anyway, if the set is empty it'll just be wrapping an array of length 0
+			}
+		}
+	}
 
-    /**
-     * Gets an iterator representing an immutable snapshot of all subscribers to the given event at the time this method
-     * is called.
-     */
-    Iterator<Subscriber> getSubscribers(Object event) {
-        if (event instanceof TypeSupplier) {
-            Class<?> eventSourceType = ((TypeSupplier) event).getType();
-            int hashCode = Objects.hash(event.getClass().getName(), eventSourceType.getName());
-            CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
-            return eventSubscribers != null ? eventSubscribers.iterator() : Collections.emptyIterator();
-        } else {
-            Set<Class<?>> eventTypes = subscriberLoader.flattenHierarchy(event.getClass());
-            LinkedList<Iterator<Subscriber>> subscriberIterators = new LinkedList<>();
-            for (Class<?> eventType : eventTypes) {
-                int hashCode = eventType.getName().hashCode();
-                CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
-                if (eventSubscribers != null) {// eager no-copy snapshot
-                    subscriberIterators.add(eventSubscribers.iterator());
-                }
-            }
-            return new IteratorAggregator<>(subscriberIterators);
-        }
-    }
+	/**
+	 * Gets an iterator representing an immutable snapshot of all subscribers to the
+	 * given event at the time this method is called.
+	 */
+	Iterator<Subscriber> getSubscribers(Object event) {
+		if (event instanceof TypeSupplier) {
+			Class<?> eventSourceType = ((TypeSupplier) event).getType();
+			int hashCode = Objects.hash(event.getClass().getName(), eventSourceType.getName());
+			CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
+			return eventSubscribers != null ? eventSubscribers.iterator() : Collections.emptyIterator();
+		} else {
+			Set<Class<?>> eventTypes = subscriberLoader.flattenHierarchy(event.getClass());
+			LinkedList<Iterator<Subscriber>> subscriberIterators = new LinkedList<>();
+			for (Class<?> eventType : eventTypes) {
+				int hashCode = eventType.getName().hashCode();
+				CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
+				if (eventSubscribers != null) {// eager no-copy snapshot
+					subscriberIterators.add(eventSubscribers.iterator());
+				}
+			}
+			return new IteratorAggregator<>(subscriberIterators);
+		}
+	}
 
-    /**
-     * Returns all subscribers for the given listener grouped by the type of event they subscribe to.
-     */
-    private Map<Integer, List<Subscriber>> findAllSubscribers(Object listener) {
-        Map<Integer, List<Subscriber>> methodsInListener = new HashMap<>();
-        WeakReference<?> weakListener = new WeakReference<>(listener);
-        Class<?> clazz = listener.getClass();
-        for (Method method : subscriberLoader.findSubscriberMethods(clazz)) {
-            int hashCode = computeParameterHashCode(method);
-            List<Subscriber> subscriberList = methodsInListener.computeIfAbsent(hashCode, k -> new ArrayList<>());
-            subscriberList.add(Subscriber.create(bus, weakListener, method, hashCode));
-        }
-        return methodsInListener;
-    }
+	/**
+	 * Returns all subscribers for the given listener grouped by the type of event
+	 * they subscribe to.
+	 */
+	private Map<Integer, List<Subscriber>> findAllSubscribers(Object listener) {
+		Map<Integer, List<Subscriber>> methodsInListener = new HashMap<>();
+		WeakReference<?> weakListener = new WeakReference<>(listener);
+		Class<?> clazz = listener.getClass();
+		for (Method method : subscriberLoader.findSubscriberMethods(clazz)) {
+			int hashCode = computeParameterHashCode(method);
+			List<Subscriber> subscriberList = methodsInListener.computeIfAbsent(hashCode, k -> new ArrayList<>());
+			subscriberList.add(Subscriber.create(bus, weakListener, method, hashCode));
+		}
+		return methodsInListener;
+	}
 
-    private int computeParameterHashCode(Method method) {
-        Class<?> parameterClass = method.getParameterTypes()[0];
-        Type parameterType = method.getGenericParameterTypes()[0];
-        if (parameterClass.equals(TypedEvent.class) && parameterType instanceof ParameterizedType) {
-            ParameterizedType firstParam = (ParameterizedType) parameterType;
-            Type[] typeArguments = firstParam.getActualTypeArguments();
-            return Objects.hash(firstParam.getRawType().getTypeName(), typeArguments[0].getTypeName());
-        }
-        return parameterClass.getName().hashCode();
-    }
+	private int computeParameterHashCode(Method method) {
+		Class<?> parameterClass = method.getParameterTypes()[0];
+		Type parameterType = method.getGenericParameterTypes()[0];
+		if (parameterClass.equals(TypedEvent.class) && parameterType instanceof ParameterizedType) {
+			ParameterizedType firstParam = (ParameterizedType) parameterType;
+			Type[] typeArguments = firstParam.getActualTypeArguments();
+			return Objects.hash(firstParam.getRawType().getTypeName(), typeArguments[0].getTypeName());
+		}
+		return parameterClass.getName().hashCode();
+	}
 
-    private static <T> T firstNonNull(T first, T second) {
-        return first != null ? first : Objects.requireNonNull(second);
-    }
+	private static <T> T firstNonNull(T first, T second) {
+		return first != null ? first : Objects.requireNonNull(second);
+	}
 
-    /**
-     * Clear all subscribers from the cache.
-     */
-    void clear() {
-        subscribers.clear();
-        subscriberLoader.invalidateAll();
-    }
+	/**
+	 * Clear all subscribers from the cache.
+	 */
+	void clear() {
+		subscribers.clear();
+		subscriberLoader.invalidateAll();
+	}
 
-    Set<Subscriber> getSubscribersForTesting(Class<?> eventType) {
-        int hashCode = eventType.getName().hashCode();
-        /*if (event instanceof TypeSupplier) {
-            Class<?> eventSourceType = ((TypeSupplier) event).getType();
-            hashCode = (31 + hashCode) * 31 + eventSourceType.getName().hashCode();
-        }*/
-        CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
-        return eventSubscribers != null ? eventSubscribers : Set.of();
-    }
+	Set<Subscriber> getSubscribersForTesting(Class<?> eventType) {
+		int hashCode = eventType.getName().hashCode();
+		CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(hashCode);
+		return eventSubscribers != null ? eventSubscribers : Collections.emptySet();
+	}
 
-    private static final class IteratorAggregator<E> implements Iterator<E> {
-        private final LinkedList<Iterator<E>> internalIterators;
-        private Iterator<E> currentIterator = null;
+	private static final class IteratorAggregator<E> implements Iterator<E> {
+		private final LinkedList<Iterator<E>> internalIterators;
+		private Iterator<E> currentIterator = null;
 
-        private IteratorAggregator(List<Iterator<E>> iterators) {
-            internalIterators = new LinkedList<>(iterators);
-        }
+		private IteratorAggregator(List<Iterator<E>> iterators) {
+			internalIterators = new LinkedList<>(iterators);
+		}
 
-        @Override
-        public boolean hasNext() {
-            return (currentIterator != null && currentIterator.hasNext()) ||
-                    (!internalIterators.isEmpty() && internalIterators.getFirst().hasNext());
-        }
+		@Override
+		public boolean hasNext() {
+			return (currentIterator != null && currentIterator.hasNext())
+					|| (!internalIterators.isEmpty() && internalIterators.getFirst().hasNext());
+		}
 
-        @Override
-        public E next() {
-            if (currentIterator != null && currentIterator.hasNext()) {
-                return currentIterator.next();
-            }
-            currentIterator = internalIterators.pollFirst();
-            if (currentIterator != null) {
-                return currentIterator.next();
-            }
-            throw new NoSuchElementException();
-        }
+		@Override
+		public E next() {
+			if (currentIterator != null && currentIterator.hasNext()) {
+				return currentIterator.next();
+			}
+			currentIterator = internalIterators.pollFirst();
+			if (currentIterator != null) {
+				return currentIterator.next();
+			}
+			throw new NoSuchElementException();
+		}
 
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
 }

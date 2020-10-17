@@ -21,8 +21,9 @@ import java.util.EventObject;
  * Typed event that provides the type of source object used.
  * @param <T> the type of event object being published
  */
+@SuppressWarnings("serial")
 public class TypedEvent<T> extends EventObject implements TypeSupplier {
-    private final Object eventContext;
+	private final Object eventContext;
 
     /**
      * Constructs a generic Application Event.

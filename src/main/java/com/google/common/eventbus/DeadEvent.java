@@ -25,8 +25,9 @@ import java.util.Objects;
  * system's event distribution.
  * @author Cliff Biffle
  */
+@SuppressWarnings("serial")
 public final class DeadEvent extends EventObject {
-    private final Object event;
+	private final Object event;
 
     /**
      * Creates a new DeadEvent.

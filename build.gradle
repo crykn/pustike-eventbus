@@ -9,10 +9,10 @@ repositories {
 	jcenter()
 }
 
-version = "1.6.0"
+version = "1.6.1"
 
-sourceCompatibility = 9
-targetCompatibility = 9
+sourceCompatibility = 8
+targetCompatibility = 8
 
 ext {
 }
