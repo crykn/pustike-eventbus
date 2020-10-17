@@ -13,15 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.pustike.eventbus;
-
 /**
- * Provides the event type to be applied for generic events.
+ * EventBus allows publish-subscribe-style communication between components without requiring components to explicitly
+ * register with one another (and thus be aware of each other).
  */
-public interface TypeSupplier {
-    /**
-     * Gets a type.
-     * @return a type
-     */
-    Class<?> getType();
-}
+package com.google.common.eventbus;

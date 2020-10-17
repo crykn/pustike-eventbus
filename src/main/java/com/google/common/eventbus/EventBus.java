@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.pustike.eventbus;
+package com.google.common.eventbus;
 
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
@@ -66,7 +66,7 @@ import java.util.concurrent.Executor;
  * EventBus}</a>.
  * @author Cliff Biffle
  */
-public final class EventBus {
+public class EventBus {
     // the identifier for this event bus
     private final String identifier;
     // executor to dispatch events received from the dispatcher
