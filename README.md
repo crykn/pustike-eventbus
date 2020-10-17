@@ -1,10 +1,13 @@
-Pustike EventBus     [![][Maven Central img]][Maven Central] [![][Javadocs img]][Javadocs] [![][license img]][license]
-================
-Pustike EventBus is a fork of [Guava EventBus](https://github.com/google/guava/wiki/EventBusExplained), which is probably the most commonly known event bus for Java. Most of the documentation here and test cases are from Guava itself.
+## guava-eventbus
+==============
 
-The [Guava Project](https://github.com/google/guava) contains several core libraries and is distributed as a single module that has a size of ~2.2MB (as of v19.0). So an application using only the EventBus will also need to include the full Guava dependency.
+[![Release](https://jitpack.io/v/crykn/guava-eventbus.svg)](https://jitpack.io/#crykn/guava-eventbus)
 
-Pustike EventBus is an effort to extract only the event bus library from Guava project without any other dependencies. And it also provides few additional features / changes, like:
+This is a fork of [pustike-eventbus](https://github.com/pustike/pustike-eventbus), an extracted version of Guava's well known `[EventBus](https://github.com/google/guava/wiki/EventBusExplained)`. Most of the documentation  and test cases here are from Guava itself.
+
+The [Guava Project](https://github.com/google/guava) contains several core libraries and is distributed as a single module that has a size of ~2.7MB (as of v29.0). So an application using only the EventBus will also need to include the full Guava dependency.
+
+This project is an effort to extract only the event bus library from Guava without any other dependencies. It also provides a few additional features/changes, like:
 * Typed Events supporting event type specific subscribers
 * Error handling using ExceptionEvents
 * WeakReference to target subscribers
@@ -12,27 +15,6 @@ Pustike EventBus is an effort to extract only the event bus library from Guava p
 * Unregistering a not-registered subscriber doesn't throw exception
 * Allows using an external cache for loading subscriber methods and event type hierarchy
 * Only ~20kB in size when using default subscriber cache
-* Java 11 as the min requirement (Guava supports Java 6 onwards)
-
-**Documentation:** Latest javadocs is available [here][Javadocs].
-
-**Release:** The most recent release is v1.5.0 (2018-09-28).
-
-To add a dependency using Maven, use the following:
-```xml
-    <dependency>
-        <groupId>io.github.pustike</groupId>
-        <artifactId>pustike-eventbus</artifactId>
-        <version>1.5.0</version>
-    </dependency>
-```
-To add a dependency using Gradle:
-```
-dependencies {
-    compile 'io.github.pustike:pustike-eventbus:1.5.0'
-}
-```
-Or, download the [latest JAR](https://search.maven.org/remote_content?g=io.github.pustike&a=pustike-eventbus&v=LATEST)
 
 Event Bus
 ---------
@@ -144,22 +126,6 @@ EventBus eventBus = new EventBus("default", Dispatcher.perThreadDispatchQueue(),
         executor, subscriberLoader);
 ```
 
-Other EventBus Libraries
-------------------------
-* [Guava EventBus](https://github.com/google/guava/wiki/EventBusExplained) allows publish-subscribe-style event communication
-
-* [Square](https://square.github.io/otto)'s [Otto](https://github.com/square/otto): An enhanced event bus with emphasis on Android support.
-
-* GreenRobot [Event Bus](https://github.com/greenrobot/EventBus): Android optimized event bus that simplifies communication between Activities, Fragments, Threads, Services, etc. Less code, better quality.
-
-* [MBassador](https://github.com/bennidi/mbassador) is a light-weight, high-performance message (event) bus implementation based on the publish subscribe pattern.
-
-* [EventBus](http://www.eventbus.org) and [Simple EventBus](http://code.google.com/p/simpleeventbus)
-
-* [Mycila PubSub](https://github.com/mycila/pubsub) is a new powerful event framework for in-memory event management.
-
-* [Spring Framework](https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#context-functionality-events) Application Event publishing support using spring context.
-
 License
 -------
 This library is published under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -178,12 +144,6 @@ This library is published under the [Apache License, Version 2.0](https://www.ap
  See the License for the specific language governing permissions and
  limitations under the License.
 ```
-
-[Maven Central]:https://maven-badges.herokuapp.com/maven-central/io.github.pustike/pustike-eventbus
-[Maven Central img]:https://maven-badges.herokuapp.com/maven-central/io.github.pustike/pustike-eventbus/badge.svg
-
-[Javadocs]:https://javadoc.io/doc/io.github.pustike/pustike-eventbus
-[Javadocs img]:https://javadoc.io/badge/io.github.pustike/pustike-eventbus.svg
 
 [license]:LICENSE
 [license img]:https://img.shields.io/badge/license-Apache%202-blue.svg
