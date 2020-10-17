@@ -32,7 +32,7 @@ import java.util.concurrent.Executor;
  * <i>event subscriber</i>, which accepts a single argument of the type of event desired;</li> <li>Mark it with a {@link
  * Subscribe} annotation;</li> <li>Pass itself to an EventBus instance's {@link #register(Object)} method. </li> </ol>
  *
- * <h2>Posting Events</h2> <p>To post an event, simply provide the event object to the {@link #publish(Object)} method.
+ * <h2>Posting Events</h2> <p>To post an event, simply provide the event object to the {@link #post(Object)} method.
  * The EventBus instance will determine the type of event and route it to all registered listeners.
  *
  * <p>Events are routed based on their type &mdash; an event will be delivered to any subscriber for any type to which
@@ -160,14 +160,14 @@ public class EventBus {
      * DeadEvent}, it will be wrapped in a DeadEvent and reposted.
      * @param event event to post.
      */
-    public void publish(Object event) {
+    public void post(Object event) {
         Objects.requireNonNull(event);
         Iterator<Subscriber> eventSubscribers = subscriberRegistry.getSubscribers(event);
         if (eventSubscribers.hasNext()) {
             dispatcher.dispatch(event, eventSubscribers);
         } else if (!(event instanceof DeadEvent) && !(event instanceof ExceptionEvent)) {
             // the event had no subscribers and was not itself a DeadEvent or an ExceptionEvent
-            publish(new DeadEvent(this, event));
+            post(new DeadEvent(this, event));
         }
     }
 

@@ -74,7 +74,7 @@ class Subscriber {
             } catch (InvocationTargetException e) {
                 // do not publish if an exception occurs in the exception event handler
                 if (!(event instanceof ExceptionEvent)) {
-                    eventBus.publish(new ExceptionEvent(eventBus, getTarget(), method, event, e.getCause()));
+                    eventBus.post(new ExceptionEvent(eventBus, getTarget(), method, event, e.getCause()));
                 }
             }
         });
