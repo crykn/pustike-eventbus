@@ -1,11 +1,50 @@
-*.class
+## Gradle
+.gradle
+gradle-app.setting
+build/
 
-# Package Files #
+## Java
+*.class
 *.war
 *.ear
-*.iml
+hs_err_pid*
+.attach_pid*
 
-/.idea/
-/.gradle/
-/build/
-/target/
+## IntelliJ, Android Studio
+.idea/
+*.ipr
+*.iws
+*.iml
+out/
+
+## Eclipse
+.classpath
+.project
+.metadata
+**/bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+.settings/
+.loadpath
+.externalToolBuilders/
+*.launch
+
+## NetBeans
+**/nbproject/private/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+## OS Specific
+.DS_Store
+
+## Miscellaneous
+*~
+*.*#
+*#*#
+

@@ -1,0 +1,18 @@
+apply plugin: "java-library"
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+	maven { url "https://jitpack.io" }
+	jcenter()
+}
+
+version = "1.5.1"
+
+ext {
+}
+
+dependencies {
+}
