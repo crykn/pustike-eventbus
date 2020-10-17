@@ -1,6 +1,4 @@
 ## guava-eventbus
-==============
-
 [![Release](https://jitpack.io/v/crykn/guava-eventbus.svg)](https://jitpack.io/#crykn/guava-eventbus)
 
 This is a fork of [pustike-eventbus](https://github.com/pustike/pustike-eventbus), an extracted version of Guava's well known `[EventBus](https://github.com/google/guava/wiki/EventBusExplained)`. Most of the documentation  and test cases here are from Guava itself.
@@ -16,9 +14,8 @@ This project is an effort to extract only the event bus library from Guava witho
 * Allows using an external cache for loading subscriber methods and event type hierarchy
 * Only ~20kB in size when using default subscriber cache
 
-Event Bus
----------
-An event bus is a library providing publisher/subscriber pattern for loose coupling between components(event senders and receivers), by sending messages to each other indirectly. Some objects register with the bus to be notified when certain events of interest occur. And some publish events on the bus. The bus notifies each of the registrants when the event is published. So registrant objects and event-source objects need not know about each other directly. Each may join or depart the bus at any time. Thus it enables central communication between components, simplifies the code and removes direct dependencies.
+## Event Bus
+An event bus is a library providing publisher/subscriber pattern for loose coupling between components(event senders and receivers), by sending messages to each other indirectly. Some objects register with the bus to be notified when certain events of interest occur. And some post events on the bus. The bus notifies each of the registered subscribers when the event is published. This enables communication between components via a common channel, which in turn simplifies the code and removes direct dependencies.
 
 To create an instance of the event bus with a default identifier and using a per thread dispatch queue and a direct executor which publishes events in the same thread:
 ```java
@@ -47,16 +44,15 @@ Here internally weak references to listener objects are maintained instead of st
 
 * **Thread Safety**: By default, the bus considers subscriber methods as not thread safe and synchronizes invocations of the subscriber method to ensure that only one thread may enter the method at a time. To mark an event subscriber method as being thread-safe, set `@Subscribe(threadSafe = true)`. It indicates that the bus may invoke this event subscriber simultaneously from multiple threads.
 
-### Publishing
-Publish events on the bus which dispatches it to all listeners subscribing to this event type. An instance of any class may be published and it will only be dispatched to subscribers for that type.
+### Posting Events
+Posting an event on the bus dispatches it to all listeners subscribing to this specific event type.
 ```java
 String messageEvent = "Hello!";
-bus.publish(messageEvent);
+bus.post(messageEvent);
 ```
-* **Event Hierarchy**: When an event is published, it is delivered to all the subscribers matching to any of the super classes or interfaces of this event. For ex. when `String` and `Integer` type events are published, the subscriber to `Comparable` will be called on both the events. This can be used to create more generic listeners listening for a broader range of events and more detailed ones for specific purposes.
+* **Event Hierarchy**: When an event is published, it is delivered to all the subscribers matching to any of the super classes or interfaces of this event. For example, when `String` and `Integer` type events are published, the subscriber to `Comparable` will be called on both the events. This can be used to create more generic listeners listening for a broader range of events and more detailed ones for specific purposes.
 
-### Unregister
-
+### Unregistering
 Listeners can be unregistered from the bus using
 ```java
 bus.unregister(listener);
@@ -89,7 +85,7 @@ bus.unregister(listener);
     }
 ```
 
-### Using external Cache
+### Using an External Cache
 By default, the event bus will use a ConcurrentMap internally to cache Subscriber methods identified on registering listener objects. To use an external cache like [Caffeine](https://github.com/ben-manes/caffeine) for loading & storing subscriber methods in a listener class and type hierarchy of event classes, the following approach can be used:
 ```java
 public class CaffeineSubscriberLoader extends DefaultSubscriberLoader {
@@ -126,8 +122,7 @@ EventBus eventBus = new EventBus("default", Dispatcher.perThreadDispatchQueue(),
         executor, subscriberLoader);
 ```
 
-License
--------
+## License
 This library is published under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 ```
  Copyright (C) 2016 the original author or authors.
@@ -144,6 +139,3 @@ This library is published under the [Apache License, Version 2.0](https://www.ap
  See the License for the specific language governing permissions and
  limitations under the License.
 ```
-
-[license]:LICENSE
-[license img]:https://img.shields.io/badge/license-Apache%202-blue.svg
