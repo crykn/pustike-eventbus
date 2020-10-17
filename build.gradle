@@ -11,6 +11,9 @@ repositories {
 
 version = "1.5.1"
 
+sourceCompatibility = 9
+targetCompatibility = 9
+
 ext {
 }
 
