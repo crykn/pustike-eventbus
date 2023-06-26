@@ -1,7 +1,7 @@
 ## guava-eventbus
 [![Release](https://jitpack.io/v/crykn/guava-eventbus.svg)](https://jitpack.io/#crykn/guava-eventbus)
 
-This is a fork of [pustike-eventbus](https://github.com/pustike/pustike-eventbus), an extracted version of Guava's well known [`EventBus`](https://github.com/google/guava/wiki/EventBusExplained). Most of the documentation  and test cases here are from Guava itself.
+This is a fork of [pustike-eventbus](https://github.com/pustike/pustike-eventbus), an extracted version of Guava's well known [`EventBus`](https://github.com/google/guava/wiki/EventBusExplained). Most of the documentation  and test cases here are from Guava itself. If you are looking for a GWT-compatible version, check out [gdx-guava-eventbus](https://github.com/crykn/gdx-guava-eventbus).
 
 The [Guava Project](https://github.com/google/guava) contains several core libraries and is distributed as a single module that has a size of ~2.7MB (as of v29.0). So an application using only the EventBus will also need to include the full Guava dependency.
 
